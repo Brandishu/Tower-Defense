@@ -1,0 +1,57 @@
+body {
+    background-color: lightgray;
+}
+
+#game-container {
+    display: flex;
+}
+
+#game {
+    width: 80%;
+    height: 500px;
+    background-color: #ddd;
+    position: relative;
+}
+
+#canvas {
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+#tower-placement {
+    display: none;
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+
+#chatbox {
+    width: 20%;
+    height: 500px;
+    background-color: #eee;
+    padding: 10px;
+}
+
+#command-input {
+    width: 80%;
+    padding: 5px;
+    margin-right: 5px;
+    background-color: #fff;
+    border: 2px solid #007bff;
+    outline: none;
+    font-weight: bold;
+}
+
+.tower {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    user-drag: none;
+    visibility: hidden;
+}
