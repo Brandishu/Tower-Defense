@@ -1,3 +1,6 @@
+import Game from './game.js';
+import Tower from './tower.js';
+
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
 const SW = canvas.width;
@@ -35,66 +38,22 @@ var commands = {
     }
     commandInput.value = "";
   }
-  class Game {
-    constructor() {
-      this.soldiers = [];
-      this.lastTime = 0;
-      this.deltaTime = 0;
-      this.towers = [];
-      this.enemies = new EnemyPool(10);
-      this.bullets = [];
-      this.isGameOver = false;
-    }
   
-    update(currentTime) {
-      this.deltaTime = (currentTime - this.lastTime) / 1000;
-      this.lastTime = currentTime;
-      for (let i = 0; i < this.enemies.pool.length; i++) {
-        let enemy = this.enemies.pool[i];
-        enemy.update(this.deltaTime);
-        if (!this.isGameOver) {
-            requestAnimationFrame((currentTime) => this.update(currentTime));
-          }
-      }
-    }
-  }
   function startGame() {
     var game = new Game();
     game.update(0);
   }
+  
   class Tower {
-    update(enemies, soldiers) {
-      let closestDist = Infinity;
-      let closestSoldier = null;
-      for (let i = 0; i < soldiers.length; i++) {
-        let soldier = soldiers[i];
-        let dist = this.pos.distance(soldier.pos);
-        if (dist < closestDist && dist <= this.range) {
-          closestDist = dist;
-          closestSoldier = soldier;
-        }
-      }
-      this.target = closestSoldier;
-      if (this.target && Date.now() - this.lastFired >= 1000 / this.fireRate) {
-        let dir = this.target.pos.subtract(this.pos).normalize();
-        this.bullets.push(new Bullet(this.pos.x, this.pos.y, dir, this.damage));
-        this.lastFired = Date.now();
-      }
-      for (let i = this.bullets.length - 1; i >= 0; i--) {
-        let bullet = this.bullets[i];
-        bullet.update();
-        for (let j = 0; j < soldiers.length; j++) {
-          let soldier = soldiers[j];
-          if (bullet.pos.distance(soldier.pos) <= 10) {
-            soldier.health -= bullet.damage;
-            this.bullets.splice(i, 1);
-            break;
-          }
-        }
-      }
+    constructor() {
+      this.x = 0;
+      this.y = 0;
+      this.range = 100;
+      this.damage = 10;
+      this.fireRate = 1;
+      this.lastFired = 0;
     }
   }
-  
   class Bullet {
     constructor(pos, target) {
       this.pos = pos;
