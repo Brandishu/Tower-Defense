@@ -12,6 +12,77 @@ var towerPlacement = document.getElementById("tower-placement");
 var enemyImage = new Image();
 enemyImage.src = "enemy.png";
 
+class Tower {
+    constructor(x, y) {
+      this.pos = new Vector(x, y);
+      this.range = 100;
+      this.damage = 10;
+      this.fireRate = 1;
+      this.lastFired = 0;
+      this.target = null;
+      this.bullets = [];
+    }
+  
+    update(enemies) {
+      // Find the closest enemy within range
+      let closestDist = Infinity;
+      let closestEnemy = null;
+      for (let i = 0; i < enemies.length; i++) {
+        let enemy = enemies[i];
+        let dist = this.pos.distance(enemy.pos);
+        if (dist < closestDist && dist <= this.range) {
+          closestDist = dist;
+          closestEnemy = enemy;
+        }
+      }
+  
+      // Set the target to the closest enemy
+      this.target = closestEnemy;
+  
+      // Fire a bullet if enough time has passed since the last shot
+      if (this.target && Date.now() - this.lastFired >= 1000 / this.fireRate) {
+        this.bullets.push(new Bullet(this.pos.x, this.pos.y, this.target, this.damage));
+        this.lastFired = Date.now();
+      }
+  
+      // Update the position of each bullet and check for collisions
+      for (let i = this.bullets.length - 1; i >= 0; i--) {
+        let bullet = this.bullets[i];
+        bullet.update();
+        for (let j = 0; j < enemies.length; j++) {
+          let enemy = enemies[j];
+          if (bullet.pos.distance(enemy.pos) <= 10) {
+            enemy.health -= bullet.damage;
+            this.bullets.splice(i, 1);
+            break;
+          }
+        }
+      }
+    }
+  
+    render() {
+      context.fillStyle = "gray";
+      context.fillRect(this.pos.x - 10, this.pos.y - 10, 20, 20);
+    }
+  }
+
+class Bullet {
+    constructor(x, y, target, damage) {
+      this.pos = new Vector(x, y);
+      this.vel = new Vector(target.pos.x - x, target.pos.y - y).normalize().scale(5);
+      this.damage = damage;
+    }
+  
+    update() {
+      this.pos.add(this.vel);
+    }
+  
+    render() {
+      context.fillStyle = "red";
+      context.fillRect(this.pos.x - 2, this.pos.y - 2, 4, 4);
+    }
+  }
+
 class Soldier {
     constructor(pos, health, attack) {
         this.pos = pos;
