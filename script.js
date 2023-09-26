@@ -12,49 +12,144 @@ var towerStartX, towerStartY, towerEndX, towerEndY;
 var towerPlacement = document.getElementById("tower-placement");
 var enemyImage = new Image();
 enemyImage.src = "enemy.png";
-var commands = {
+
+// Funktion zum Aktualisieren des Spiels
+function updateGame(time) {
+  var game = new Game();
+  game.update(time);
+  requestAnimationFrame(updateGame);
+}
+
+// Funktion zum Zeichnen des Hintergrunds
+function drawBackground() {
+  context.fillStyle = bgcolor;
+  context.fillRect(0, 0, SW, SH);
+}
+
+// Funktion zum Zeichnen des Turms
+function drawTower(tower) {
+  context.beginPath();
+  context.arc(tower.x, tower.y, tower.range, 0, 2 * Math.PI);
+  context.fillStyle = "rgba(255, 255, 255, 0.2)";
+  context.fill();
+  context.beginPath();
+  context.arc(tower.x, tower.y, 5, 0, 2 * Math.PI);
+  context.fillStyle = "white";
+  context.fill();
+}
+
+// Funktion zum Zeichnen der Kugel
+function drawBullet(bullet) {
+  context.beginPath();
+  context.arc(bullet.pos.x, bullet.pos.y, bullet.radius, 0, 2 * Math.PI);
+  context.fillStyle = "red";
+  context.fill();
+}
+
+// Funktion zum Zeichnen des Gegners
+function drawEnemy(enemy) {
+  context.drawImage(enemyImage, enemy.x, enemy.y, 50, 50);
+}
+
+// Funktion zum Zeichnen des Spiels
+function drawGame(game) {
+  drawBackground(); // Hintergrund zeichnen
+  game.towers.forEach(drawTower); // Türme zeichnen
+  game.bullets.forEach(drawBullet); // Kugeln zeichnen
+  game.enemies.forEach(drawEnemy); // Gegner zeichnen
+}
+
+// Funktion zum Aktualisieren des Turms
+function updateTower(tower, time) {
+  if (isPlacingTower) {
+    tower.x = towerEndX;
+    tower.y = towerEndY;
+  }
+}
+
+// Funktion zum Aktualisieren der Kugel
+function updateBullet(bullet, time) {
+  bullet.update();
+}
+
+// Funktion zum Aktualisieren des Gegners
+function updateEnemy(enemy, time) {
+  enemy.update();
+}
+
+// Funktion zum Aktualisieren des Spiels
+function updateGame(game, time) {
+  game.update(time);
+}
+
+// Funktion zum Starten des Spiels
+function startGame() {
+  var game = new Game();
+  requestAnimationFrame(function(time) {
+    updateGame(game, time);
+    drawGame(game);
+  });
+}
+
+// Funktion zum Aktivieren/Deaktivieren des Turmplatzierungsmodus
+function toggleTowerPlacementMode() {
+  isPlacingTower = !isPlacingTower;
+  towerPlacement.style.display = isPlacingTower ? "block" : "none";
+}
+
+// Funktion zum Anzeigen der Antwort
+function displayResponse(response) {
+  var responseElement = document.getElementById("response");
+  responseElement.innerHTML = response;
+}
+
+// Funktion zum Anzeigen einer Nachricht
+function displayMessage(message) {
+  var messageElement = document.getElementById("message");
+  messageElement.innerHTML = message;
+}
+
+// Funktion zum Verarbeiten von Befehlen
+function processCommand(command) {
+  var commands = {
     help: "Type 'build' to place a tower, 'upgrade' to upgrade a tower, or 'sell' to sell a tower.",
     build: function() {
       toggleTowerPlacementMode();
-      displayResponse("Click on the canvas to place the tower.");
+      displayMessage("Click on the canvas to place the tower.");
     },
     upgrade: function() {
-      displayResponse("To upgrade a tower, modify its properties using CSS.");
+      displayMessage("To upgrade a tower, modify its properties using CSS.");
     },
     sell: function() {
-      displayResponse("To sell a tower, remove the <div> element representing the tower.");
+      displayMessage("To sell a tower, remove the <div> element representing the tower.");
     },
     default: function() {
-      displayResponse("Invalid command. Type 'help' for a list of available commands.");
+      displayMessage("Invalid command. Type 'help' for a list of available commands.");
     }
   };
-  
-  function processCommand(command) {
-    var action = commands[command] || commands.default;
-    if (typeof action === "function") {
-      action();
-    } else {
-      displayResponse(action);
-    }
-    commandInput.value = "";
+  var action = commands[command] || commands.default;
+  if (typeof action === "function") {
+    action();
+  } else {
+    displayMessage(action);
   }
-  
-  function startGame() {
-    var game = new Game();
-    game.update(0);
+  commandInput.value = "";
+}
+
+// Klasse für den Turm
+class TowerDefenseTower {
+  constructor() {
+    this.x = 0;
+    this.y = 0;
+    this.range = 100;
+    this.damage = 10;
+    this.fireRate = 1;
+    this.lastFired = 0;
   }
+}
   
-  class Tower {
-    constructor() {
-      this.x = 0;
-      this.y = 0;
-      this.range = 100;
-      this.damage = 10;
-      this.fireRate = 1;
-      this.lastFired = 0;
-    }
-  }
-  class Bullet {
+ 
+  class TowerDefenseBullet {
     constructor(pos, target) {
       this.pos = pos;
       this.target = target;
@@ -77,47 +172,28 @@ var commands = {
       context.fill();
     }
   }
-class Soldier {
+
+  class TowerDefenseSoldier {
     constructor(pos, health, attack) {
-        this.pos = pos;
-        this.health = health;
-        this.attack = attack;
-        this.targets = [];
-        this.targets[0] = new Vector(startPos.x + pathData[0].x - 20, startPos.y + pathData[0].y -25);
-        for (let i = 1; i < pathData.length; i++) {
-            let prevTarget = this.targets[i - 1];
-            let path = pathData[i];
-            let newTarget = new Vector(prevTarget.x + path.x, prevTarget.y + path.y);
-            this.targets[i] = newTarget;
-        }
-        this.currentTargetIndex = 0;
-        this.dir = new Vector(0, 0);
-        this.speed = 1;
-        this.minTargetDist = 5;
-        this.isAlive = true;
+      this.pos = pos;
+      this.health = health;
+      this.attack = attack;
+      this.targets = [];
+      this.targets[0] = new Vector(startPos.x + pathData[0].x - 20, startPos.y + pathData[0].y -25);
+      for (let i = 1; i < pathData.length; i++) {
+        let prevTarget = this.targets[i - 1];
+        let path = pathData[i];
+        let newTarget = new Vector(prevTarget.x + path.x, prevTarget.y + path.y);
+        this.targets[i] = newTarget;
+      }
     }
-    update() {
-        if (!this.isAlive) return;
-        let dir = new Vector(this.targets[this.currentTargetIndex].x - this.pos.x, this.targets[this.currentTargetIndex].y - this.pos.y);
-        let distance = Math.sqrt(dir.x ** 2 + dir.y ** 2);
-        if (distance == 0) return;
-        dir.x /= distance;
-        dir.y /= distance;
-        this.pos.x += dir.x * this.speed;
-        this.pos.y += dir.y * this.speed;
-        let xDist = Math.abs(this.pos.x - this.targets[this.currentTargetIndex].x);
-        let yDist = Math.abs(this.pos.y - this.targets[this.currentTargetIndex].y);
-        if (xDist <= this.minTargetDist && yDist <= this.minTargetDist) {
-            this.currentTargetIndex++;
-            if (this.currentTargetIndex >= this.targets.length) {
-                this.isAlive = false;
-            }
-        }
-    }
-    render() {
-        context.drawImage(enemyImage, this.pos.x, this.pos.y, 40, 40);
-    }
-}
+  }
+  
+
+  function startTowerDefenseGame() {
+    var game = new Game();
+    game.update(0);
+  }
 class Vector {
     constructor(x, y) {
       this.x = x;
