@@ -461,6 +461,25 @@ canvas.addEventListener("mousemove", function (event) {
         towerPlacement.style.top = top + "px";
     }
 });
+canvas.addEventListener("click", function(event) {
+    if (isPlacingTower) {
+      // Calculate the position of the tower based on the mouse click
+      let rect = canvas.getBoundingClientRect();
+      let x = event.clientX - rect.left;
+      let y = event.clientY - rect.top;
+  
+      // Create a new tower and add it to the towers array
+      let tower = new Tower(x, y);
+      game.towers.push(tower);
+  
+      // Reset the tower placement variables
+      isPlacingTower = false;
+      towerStartX = null;
+      towerStartY = null;
+      towerEndX = null;
+      towerEndY = null;
+    }
+  });
 
 function displayResponse(response) {
     var chatbox = document.getElementById("chatbox");
