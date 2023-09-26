@@ -19,7 +19,7 @@ class Soldier {
         this.attack = attack;
 
         this.targets = [];
-        this.targets[0] = new Vector(startPos.x + pathData[0].x, startPos.y + pathData[0].y);
+        this.targets[0] = new Vector(startPos.x + pathData[0].x - 20, startPos.y + pathData[0].y -25);
 
         for (let i = 1; i < pathData.length; i++) {
             let prevTarget = this.targets[i - 1];
@@ -31,8 +31,8 @@ class Soldier {
 
         this.currentTargetIndex = 0;
         this.dir = new Vector(0, 0);
-        this.speed = 4;
-        this.minTargetDist = 2;
+        this.speed = 1;
+        this.minTargetDist = 5;
         this.isAlive = true;
     }
 
@@ -76,25 +76,34 @@ class Vector {
     }
 }
 
-var startPos = new Vector(0, 200);
+var startPos = new Vector(50, 0);
 var pathData = [
     new Vector(0, 200),
-    new Vector(400, 0),
+    new Vector(100, 0),
     new Vector(0, -100),
     new Vector(100, 0),
-    new Vector(0, -200),
-    new Vector(400, 0),
     new Vector(0, 300),
+    new Vector(100, 0),
+    new Vector(0, -100),
+    new Vector(200, 0),
+    new Vector(0, -100),
+    new Vector(-100, 0),
+    new Vector(0, -100),
+    new Vector(200, 0),
+    new Vector(0, 300),
+    new Vector(-100, 0),
+    new Vector(0, 100),
+    new Vector(-400, 0),
 ];
 
 var soldiers = [];
 const NUM_SOLDIERS = 100;
-var soldierStart = new Vector(0, 200);
+var soldierStart = new Vector(0, 50);
 
 for (let i = 0; i < NUM_SOLDIERS; i++) {
     let newSoldier = new Soldier(new Vector(soldierStart.x, soldierStart.y), "blue", 20, 100, 10);
     soldiers.push(newSoldier);
-    soldierStart.y -= 30;
+    soldierStart.y -= 60;
 }
 
 function update() {
@@ -103,54 +112,57 @@ function update() {
     });
 }
 
-function renderPath() {
-    let drawPos = new Vector(startPos.x, startPos.y);
-    let prevPath = new Vector(0, 0);
+function renderPath(){
+	let drawPos = new Vector(startPos.x,startPos.y);
 
-    context.fillStyle = "gray";
+	context.fillStyle = "gray";
 
-    pathData.forEach(function (path) {
-        if (path.x == 0) {
-            let x = drawPos.x - TILE_W;
-            let y = drawPos.y - TILE_W;
-            let w = TILE_W * 2;
-            let h = path.y + TILE_W * 2;
+	pathData.forEach(function(path){
+		if (path.x == 0){
+			let x = drawPos.x - TILE_W; 
+			let y = drawPos.y - TILE_W; 
+			let w = TILE_W * 2;
+			let h = path.y + TILE_W * 2;
+			console.log(path.y);
+			context.fillRect(x,y,w,h);
+		}
+		
+		else{
+			let x = drawPos.x - TILE_W;
+			let y = drawPos.y - TILE_W;
+			let w = path.x + TILE_W * 2;
+			let h = TILE_W * 2;
+			
 
-            context.fillRect(x, y, w, h);
-        } else {
-            let x = drawPos.x - TILE_W;
-            let y = drawPos.y - TILE_W;
-            let h = TILE_W * 2;
-            let w = path.x + TILE_W * 2;
+			context.fillRect(x,y,w,h);
+		}
+		
+		drawPos.x += path.x; 
+		drawPos.y += path.y; 
 
-            context.fillRect(x, y, w, h);
-        }
-
-        drawPos.x += path.x;
-        drawPos.y += path.y;
-
-        context.fillStyle = "gray";
-
-        if (path.x !== 0) {
+		// Zeichne Verknüpfungen zwischen den Pfadsegmenten
+        context.fillStyle = "gray"; // Graue Farbe für die Verknüpfungen
+        if (path.y !== 0 ) {
             context.fillRect(
-                drawPos.x - TILE_W / 2,
-                drawPos.y - TILE_W / 2,
-                TILE_W,
-                TILE_W
+                drawPos.x - TILE_W ,
+                drawPos.y - TILE_W ,
+                TILE_W*2,
+                TILE_W*2
             );
         }
 
+        // Verhindere, dass der Weg in den Ecken fehlt
         if (path.x !== 0 && prevPath.y !== 0) {
             context.fillRect(
-                drawPos.x - TILE_W / 2,
-                drawPos.y - TILE_W / 2,
-                TILE_W,
-                TILE_W
+                drawPos.x - TILE_W ,
+                drawPos.y - TILE_W ,
+                TILE_W*2,
+                TILE_W*2
             );
         }
-
-        prevPath = path;
-    });
+		
+		prevPath = path;
+	});
 }
 
 function renderGrid() {
