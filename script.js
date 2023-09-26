@@ -69,10 +69,10 @@ class Game {
       for (let i = this.bullets.length - 1; i >= 0; i--) {
         let bullet = this.bullets[i];
         bullet.update();
-        for (let j = 0; j < enemies.length; j++) {
-          let enemy = enemies[j];
-          if (bullet.pos.distance(enemy.pos) <= 10) {
-            enemy.health -= bullet.damage;
+        for (let j = 0; j < soldiers.length; j++) {
+          let soldier = soldiers[j];
+          if (bullet.pos.distance(soldier.pos) <= 10) {
+            soldier.health -= bullet.damage;
             this.bullets.splice(i, 1);
             break;
           }
