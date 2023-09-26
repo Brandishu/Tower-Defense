@@ -12,6 +12,93 @@ var towerPlacement = document.getElementById("tower-placement");
 var enemyImage = new Image();
 enemyImage.src = "enemy.png";
 
+class Tower {
+    constructor(x, y) {
+      this.pos = new Vector(x, y);
+      this.range = 100;
+      this.damage = 10;
+      this.fireRate = 1;
+      this.lastFired = 0;
+      this.target = null;
+      this.bullets = [];
+      this.bulletSpeed = 5; // Neue Eigenschaft für die Geschwindigkeit der Kugeln
+    }
+  
+    update(enemies) {
+      // Find the closest enemy within range
+      let closestDist = Infinity;
+      let closestEnemy = null;
+      for (let i = 0; i < enemies.length; i++) {
+        let enemy = enemies[i];
+        let dist = this.pos.distance(enemy.pos);
+        if (dist < closestDist && dist <= this.range) {
+          closestDist = dist;
+          closestEnemy = enemy;
+        }
+      }
+  
+      // Set the target to the closest enemy
+      this.target = closestEnemy;
+  
+      // Fire a bullet if enough time has passed since the last shot
+      if (this.target && Date.now() - this.lastFired >= 1000 / this.fireRate) {
+        // Calculate the direction of the bullet
+        let dir = this.target.pos.subtract(this.pos).normalize();
+  
+        // Add the bullet to the list of bullets
+        this.bullets.push(new Bullet(this.pos.x, this.pos.y, dir, this.damage, this.bulletSpeed));
+  
+        this.lastFired = Date.now();
+      }
+  
+      // Update the position of each bullet and check for collisions
+      for (let i = this.bullets.length - 1; i >= 0; i--) {
+        let bullet = this.bullets[i];
+        bullet.update();
+        for (let j = 0; j < enemies.length; j++) {
+          let enemy = enemies[j];
+          if (bullet.pos.distance(enemy.pos) <= 10) {
+            enemy.health -= bullet.damage;
+            this.bullets.splice(i, 1);
+            break;
+          }
+        }
+      }
+    }
+  
+    render() {
+      context.fillStyle = "gray";
+      context.fillRect(this.pos.x - 10, this.pos.y - 10, 20, 20);
+  
+      // Render each bullet
+      for (let i = 0; i < this.bullets.length; i++) {
+        let bullet = this.bullets[i];
+        bullet.render();
+      }
+    }
+  }
+  
+  class Bullet {
+    constructor(x, y, dir, damage, speed) {
+      this.pos = new Vector(x, y);
+      this.dir = dir;
+      this.damage = damage;
+      this.speed = speed;
+    }
+  
+    update() {
+      // Move the bullet in the direction of the target
+      this.pos = this.pos.add(this.dir.multiply(this.speed));
+    }
+  
+    render() {
+      context.fillStyle = "red";
+      context.beginPath();
+      context.arc(this.pos.x, this.pos.y, 5, 0, 2 * Math.PI);
+      context.fill();
+    }
+  }
+  
 class Soldier {
     constructor(pos, health, attack) {
         this.pos = pos;
@@ -71,10 +158,37 @@ class Soldier {
 
 class Vector {
     constructor(x, y) {
-        this.x = x;
-        this.y = y;
+      this.x = x;
+      this.y = y;
     }
-}
+  
+    add(other) {
+      return new Vector(this.x + other.x, this.y + other.y);
+    }
+  
+    subtract(other) {
+      return new Vector(this.x - other.x, this.y - other.y);
+    }
+  
+    multiply(scalar) {
+      return new Vector(this.x * scalar, this.y * scalar);
+    }
+  
+    divide(scalar) {
+      return new Vector(this.x / scalar, this.y / scalar);
+    }
+  
+    distance(other) {
+      let dx = this.x - other.x;
+      let dy = this.y - other.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+  
+    normalize() {
+      let length = this.distance(new Vector(0, 0));
+      return new Vector(this.x / length, this.y / length);
+    }
+  }
 
 var startPos = new Vector(50, 0);
 var pathData = [
