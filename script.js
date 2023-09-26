@@ -5,6 +5,8 @@ const SH = canvas.height;
 const TILE_W = 25;
 var bgcolor = "green";
 
+const buildings = []
+
 var isPlacingTower = false;
 var towerStartX, towerStartY, towerEndX, towerEndY;
 var towerPlacement = document.getElementById("tower-placement");
@@ -18,8 +20,10 @@ class Soldier {
         this.health = health;
         this.attack = attack;
 
+        this.width = 50;
+
         this.targets = [];
-        this.targets[0] = new Vector(startPos.x + pathData[0].x - 20, startPos.y + pathData[0].y -25);
+        this.targets[0] = new Vector(startPos.x + pathData[0].x - 30, startPos.y + pathData[0].y -50);// enemy auf weg zentrieren
 
         for (let i = 1; i < pathData.length; i++) {
             let prevTarget = this.targets[i - 1];
@@ -31,12 +35,29 @@ class Soldier {
 
         this.currentTargetIndex = 0;
         this.dir = new Vector(0, 0);
-        this.speed = 1;
+        this.speed = 1; //geschwindigkeit
         this.minTargetDist = 5;
         this.isAlive = true;
     }
 
+    healthBar() {
+        //super.draw()
+    
+        // health bar
+        c.fillStyle = 'red'
+        c.fillRect(this.pos.x, this.pos.y - 15, this.width, 10)
+    
+        c.fillStyle = 'green'
+        c.fillRect(
+          this.pos.x,
+          this.pos.y - 15,
+          (this.width * this.health) / 100,
+          10
+        )
+      }
+
     update() {
+        //this.healthBar()
         if (!this.isAlive) return;
 
         let dir = new Vector(this.targets[this.currentTargetIndex].x - this.pos.x, this.targets[this.currentTargetIndex].y - this.pos.y);
@@ -64,7 +85,7 @@ class Soldier {
 
     render() {
         // Zeichne das Gegnerbild anstelle eines Punktes
-        context.drawImage(enemyImage, this.pos.x, this.pos.y, 40, 40);
+        context.drawImage(enemyImage, this.pos.x, this.pos.y, 70, 70);// Größe Gegner
     }
 }
 
@@ -98,7 +119,7 @@ var pathData = [
 
 var soldiers = [];
 const NUM_SOLDIERS = 100;
-var soldierStart = new Vector(0, 50);
+var soldierStart = new Vector(20, 0);
 
 for (let i = 0; i < NUM_SOLDIERS; i++) {
     let newSoldier = new Soldier(new Vector(soldierStart.x, soldierStart.y), "blue", 20, 100, 10);
@@ -165,6 +186,156 @@ function renderPath(){
 	});
 }
 
+
+//
+
+
+/*function printMousePos() { // mouse position
+    var cursorX;
+    var cursorY;
+    document.onmousemove = function(e){
+    cursorX = e.pageX;
+    cursorY = e.pageY;
+}
+    document.getElementById('test').innerHTML = "x: " + cursorX + ", y: " + cursorY;
+}
+
+canvas.addEventListener ('click', (event) => {
+buildings.push(new Building, {
+    position:{
+        x: cursorX,
+        y: cursorY
+    }
+ })
+})
+*/
+buildings.forEach(building =>{
+    building.draw();
+})
+
+class Sprite {
+    constructor({
+      position = { x: 0, y: 0 },
+      imageSrc,
+      frames = { max: 1 },
+      offset = { x: 0, y: 0 }
+    }) {
+      this.position = position
+      this.image = new Image()
+      this.image.src = imageSrc
+      this.frames = {
+        max: frames.max,
+        current: 0,
+        elapsed: 0,
+        hold: 3
+      }
+      this.offset = offset
+    }
+  
+    draw() {
+      const cropWidth = this.image.width / this.frames.max
+      const crop = {
+        position: {
+          x: cropWidth * this.frames.current,
+          y: 0
+        },
+        width: cropWidth,
+        height: this.image.height
+      }
+      c.drawImage(
+        this.image,
+       /* crop.position.x,
+        crop.position.y,
+        crop.width,
+        crop.height,
+        this.position.x + this.offset.x,
+        this.position.y + this.offset.y,
+        crop.width,
+        crop.height*/
+      )
+    }
+  
+    /*update() {
+      // responsible for animation
+      this.frames.elapsed++
+      if (this.frames.elapsed % this.frames.hold === 0) {
+        this.frames.current++
+        if (this.frames.current >= this.frames.max) {
+          this.frames.current = 0
+        }
+      }
+    }*/
+  }
+
+  class Building extends Sprite {
+    constructor({ position = { x: 0, y: 0 } }) {
+      super({
+        position,
+        imageSrc: 'tower.png',
+        /*frames: {
+          max: 19
+        },
+        offset: {
+          x: 0,
+          y: -80
+        }*/
+      })
+  
+      this.width = 50 * 2
+      this.height = 50 * 2
+      this.center = {
+        x: this.position.x + this.width / 2,
+        y: this.position.y + this.height / 2
+      }
+      this.projectiles = []
+      this.radius = 250
+      this.target
+    }
+  
+    draw() {
+      //super.draw()
+  
+       c.beginPath()
+       c.arc(this.center.x, this.center.y, this.radius, 0, Math.PI * 2)
+       c.fillStyle = 'rgba(0, 0, 255, 0.2)'
+       c.fill()
+    }
+  
+    update() {
+     /* this.draw()
+      if (this.target || (!this.target && this.frames.current !== 0))
+        super.update()
+  */
+      //if (
+        this.target &&
+        //this.frames.current === 6 &&
+        //this.frames.elapsed % this.frames.hold === 0
+      //)
+        this.shoot()
+    }
+  
+    shoot() {
+      this.projectiles.push(
+        new Projectile({
+          position: {
+            x: this.center.x - 20,
+            y: this.center.y - 110
+          },
+          enemy: this.target
+        })
+      )
+    }
+  }
+
+
+
+
+//
+
+
+
+
+
 function renderGrid() {
     context.fillStyle = "black";
 
@@ -194,7 +365,7 @@ function render() {
     context.fillRect(0, 0, SW, SH);
 
     renderPath();
-    renderGrid();
+    //renderGrid();
 
     soldiers.forEach(function (s) {
         s.render();
@@ -264,15 +435,42 @@ function clearChat() {
 function startTowerPlacement() {
     isPlacingTower = true;
     towerPlacement.style.display = "block";
+
+    /*
+    buildings.push(new Building, {
+        position:{
+            x: 500,//towerEndX
+            y: 500 //towerEndY
+        }
+     })
+    
+    
+    buildings.forEach(building =>{
+        building.draw();
+    })
+*/
+
 }
 
 function endTowerPlacement() {
     if (isPlacingTower) {
-        var gridSize = 50;
+        var gridSize = 25;
         var towerX = Math.round(towerEndX / gridSize) * gridSize;
         var towerY = Math.round(towerEndY / gridSize) * gridSize;
-
-        var towerElement = document.createElement("div");
+//
+        buildings.push(new Building, {
+            position:{
+                x: 500,//towerEndX
+                y: 500 //towerEndY
+            }
+         })
+        
+        
+        buildings.forEach(building =>{
+            building.draw();
+        })
+//
+        /*var towerElement = document.createElement("div");
         towerElement.className = "tower";
         towerElement.style.backgroundImage = "url('tower.png')";
         towerElement.style.width = "40px";
@@ -280,26 +478,38 @@ function endTowerPlacement() {
         towerElement.style.top = towerY + "px";
         towerElement.style.left = towerX + "px";
         towerElement.style.zIndex = "100";
-
+        */
         var gameContainer = document.getElementById("game");
-        gameContainer.appendChild(towerElement);
+        gameContainer.appendChild(Building); //towerelement
 
-        towerElement.style.visibility = "visible";
+        //towerElement.style.visibility = "visible";
     }
-}
+} 
 
-var towerImage = new Image();
-towerImage.src = "tower.png";
+//var towerImage = new Image();
+//towerImage.src = "tower.png";
 
 isPlacingTower = false;
 towerPlacement.style.display = "none";
 
 if (isPlacingTower) {
-    var gridSize = 50;
+    var gridSize = 25;
     var towerX = Math.round(towerEndX / gridSize) * gridSize;
     var towerY = Math.round(towerEndY / gridSize) * gridSize;
-
-    var towerElement = document.createElement("div");
+//
+    buildings.push(new Building, {
+        position:{
+            x: towerEndX,
+            y: towerEndY
+        }
+     })
+    
+    
+    buildings.forEach(building =>{
+        building.draw();
+    })
+//
+    /*var towerElement = document.createElement("div");
     towerElement.className = "tower";
     towerElement.style.backgroundImage = "url('tower.png')";
     towerElement.style.width = "40px";
@@ -307,9 +517,9 @@ if (isPlacingTower) {
     towerElement.style.top = towerY + "px";
     towerElement.style.left = towerX + "px";
     towerElement.style.zIndex = "100";
-
+    */
     var gameContainer = document.getElementById("game");
-    gameContainer.appendChild(towerElement);
+    gameContainer.appendChild(Building); //towerElement
 }
 
 canvas.addEventListener("mousedown", function (event) {
@@ -327,13 +537,13 @@ canvas.addEventListener("mouseup", function (event) {
     }
 });
 
-canvas.addEventListener("mousemove", function (event) {
+/*canvas.addEventListener("mousemove", function (event) {
     if (isPlacingTower) {
         var mouseX = event.clientX;
         var mouseY = event.clientY;
 
-        var width = 40; // Breite des Turm-Bilds
-        var height = 40; // Höhe des Turm-Bilds
+        var width = 25; // Breite des Turm-Bilds
+        var height = 25; // Höhe des Turm-Bilds
         var left = Math.min(mouseX, towerStartX);
         var top = Math.min(mouseY, towerStartY);
 
@@ -342,7 +552,7 @@ canvas.addEventListener("mousemove", function (event) {
         towerPlacement.style.left = left + "px";
         towerPlacement.style.top = top + "px";
     }
-});
+});*/
 
 function displayResponse(response) {
     var chatbox = document.getElementById("chatbox");
