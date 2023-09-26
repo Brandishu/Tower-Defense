@@ -12,33 +12,45 @@ var towerPlacement = document.getElementById("tower-placement");
 var enemyImage = new Image();
 enemyImage.src = "enemy.png";
 
-class Tower {
-    constructor(x, y) {
-      this.pos = new Vector(x, y);
-      this.range = 100;
-      this.damage = 10;
-      this.fireRate = 1;
-      this.lastFired = 0;
-      this.target = null;
-      this.bullets = [];
-      this.bulletSpeed = 5; // Neue Eigenschaft für die Geschwindigkeit der Kugeln
+class Game {
+    constructor() {
+      // ...
+      this.soldiers = [];
+      // ...
     }
   
-    update(enemies) {
-      // Find the closest enemy within range
+    update() {
+      // ...
+      for (let i = 0; i < this.towers.length; i++) {
+        let tower = this.towers[i];
+        tower.update(this.enemies, this.soldiers);
+      }
+      // ...
+    }
+  
+    // ...
+  }
+
+  class Tower {
+    // ...
+  
+    update(enemies, soldiers) {
+      // ...
+  
+      // Find the closest soldier within range
       let closestDist = Infinity;
-      let closestEnemy = null;
-      for (let i = 0; i < enemies.length; i++) {
-        let enemy = enemies[i];
-        let dist = this.pos.distance(enemy.pos);
+      let closestSoldier = null;
+      for (let i = 0; i < soldiers.length; i++) {
+        let soldier = soldiers[i];
+        let dist = this.pos.distance(soldier.pos);
         if (dist < closestDist && dist <= this.range) {
           closestDist = dist;
-          closestEnemy = enemy;
+          closestSoldier = soldier;
         }
       }
   
-      // Set the target to the closest enemy
-      this.target = closestEnemy;
+      // Set the target to the closest soldier
+      this.target = closestSoldier;
   
       // Fire a bullet if enough time has passed since the last shot
       if (this.target && Date.now() - this.lastFired >= 1000 / this.fireRate) {
@@ -46,10 +58,12 @@ class Tower {
         let dir = this.target.pos.subtract(this.pos).normalize();
   
         // Add the bullet to the list of bullets
-        this.bullets.push(new Bullet(this.pos.x, this.pos.y, dir, this.damage, this.bulletSpeed));
+        this.bullets.push(new Bullet(this.pos.x, this.pos.y, dir, this.damage));
   
         this.lastFired = Date.now();
       }
+  
+      // ...
   
       // Update the position of each bullet and check for collisions
       for (let i = this.bullets.length - 1; i >= 0; i--) {
@@ -65,17 +79,7 @@ class Tower {
         }
       }
     }
-  
-    render() {
-      context.fillStyle = "gray";
-      context.fillRect(this.pos.x - 10, this.pos.y - 10, 20, 20);
-  
-      // Render each bullet
-      for (let i = 0; i < this.bullets.length; i++) {
-        let bullet = this.bullets[i];
-        bullet.render();
-      }
-    }
+    // ...
   }
   
   class Bullet {
